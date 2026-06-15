@@ -1,0 +1,126 @@
+{
+  "name": "tanstack-devtools-server-functions",
+  "version": "0.0.1",
+  "description": "A TanStack DevTools plugin that inspects TanStack Start server function calls — method, name, source file, headers, and decoded request/response JSON — like the browser network panel.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Ely Lucas",
+  "homepage": "https://github.com/elylucas/tanstack-devtools-server-functions#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elylucas/tanstack-devtools-server-functions.git"
+  },
+  "bugs": {
+    "url": "https://github.com/elylucas/tanstack-devtools-server-functions/issues"
+  },
+  "keywords": [
+    "tanstack",
+    "tanstack-start",
+    "tanstack-devtools",
+    "devtools",
+    "devtools-plugin",
+    "server-functions",
+    "network",
+    "react"
+  ],
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "vite dev --port 3000",
+    "build:app": "vite build",
+    "preview": "vite preview",
+    "generate-routes": "tsr generate",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "format": "prettier --write . && eslint --fix",
+    "check": "prettier --check .",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@tanstack/react-devtools": ">=0.10.0",
+    "@tanstack/router-core": ">=1.131.0",
+    "react": ">=18",
+    "react-dom": ">=18",
+    "seroval": ">=1.0.0"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.29.7",
+    "@tanstack/react-store": "^0.9.3",
+    "@tanstack/store": "^0.9.3",
+    "@uiw/react-json-view": "2.0.0-alpha.43"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/devtools-vite": "latest",
+    "@tanstack/eslint-config": "latest",
+    "@tanstack/react-devtools": "latest",
+    "@tanstack/react-router": "latest",
+    "@tanstack/react-router-devtools": "latest",
+    "@tanstack/react-router-ssr-query": "latest",
+    "@tanstack/react-start": "latest",
+    "@tanstack/router-cli": "^1.132.0",
+    "@tanstack/router-core": "^1.171.0",
+    "@tanstack/router-plugin": "^1.132.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^9.20.0",
+    "jsdom": "^28.1.0",
+    "lucide-react": "^0.545.0",
+    "nitro": "npm:nitro-nightly@latest",
+    "prettier": "^3.8.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "semantic-release": "^25.0.5",
+    "seroval": "^1.5.4",
+    "tailwindcss": "^4.1.18",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.0",
+    "vitest": "^4.1.5"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github"
+    ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "lightningcss"
+    ]
+  }
+}

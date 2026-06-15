@@ -29,7 +29,7 @@ decoded back into readable, color-coded JSON.
 ## Installation
 
 ```bash
-npm install tanstack-devtools-server-functions
+npm install -D tanstack-devtools-server-functions
 ```
 
 This is a dev-only plugin. Peer dependencies — which a TanStack Start app
@@ -59,11 +59,12 @@ server function.
 
 ### Exports
 
-| Export                  | Description                                                          |
-| ----------------------- | ------------------------------------------------------------------- |
-| `serverFnNetworkPlugin` | The plugin object to pass to `<TanStackDevtools plugins={[...]} />`. |
-| `NetworkPanel`          | The panel React component, if you want to render it yourself.        |
-| `networkStore`          | The underlying `@tanstack/store` of captured calls.                 |
+| Export                          | Description                                                          |
+| ------------------------------- | ------------------------------------------------------------------- |
+| `serverFnNetworkPlugin`         | The plugin object to pass to `<TanStackDevtools plugins={[...]} />`. |
+| `createServerFnNetworkPlugin()` | Factory returning the plugin object (used by marketplace auto-install). |
+| `NetworkPanel`                  | The panel React component, if you want to render it yourself.        |
+| `networkStore`                  | The underlying `@tanstack/store` of captured calls.                 |
 
 ## How it works
 
@@ -87,6 +88,13 @@ server function.
 - Capture relies on the default global `fetch`. If you configure a custom
   server-fn fetch via `createStart({ serverFns: { fetch } })`, install the
   interceptor around that implementation instead.
+
+## Marketplace
+
+This plugin is set up for the [TanStack DevTools marketplace](https://tanstack.com/devtools/latest/docs/third-party-plugins).
+It exports `createServerFnNetworkPlugin()` (the `type: 'function'` shape the
+marketplace auto-installer expects). See [MARKETPLACE.md](./MARKETPLACE.md) for
+the registry entry and PR steps.
 
 ## Development
 

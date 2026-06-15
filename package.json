@@ -1,6 +1,6 @@
 {
   "name": "tanstack-devtools-server-functions",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A TanStack DevTools plugin that inspects TanStack Start server function calls — method, name, source file, headers, and decoded request/response JSON — like the browser network panel.",
   "type": "module",
   "license": "MIT",

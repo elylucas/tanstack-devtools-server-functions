@@ -3,11 +3,18 @@
  * `Buffer.from(...).toString('base64url')` produces it. Plain `atob` only
  * understands the standard base64 alphabet and throws `InvalidCharacterError`
  * on `-`/`_`, so we translate the alphabet and restore padding first.
+ *
+ * `atob` also only yields a Latin1 "binary string" (one JS char per byte),
+ * but the upstream id is encoded from UTF-8 bytes (`Buffer.from(..., 'utf8')`),
+ * so any non-ASCII characters in `file`/`export` would come out mojibake'd.
+ * Re-decoding the byte string as UTF-8 via `TextDecoder` fixes that.
  */
 function base64UrlDecode(str: string): string {
   const base64 = str.replace(/-/g, '+').replace(/_/g, '/')
   const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
-  return atob(padded)
+  const binary = atob(padded)
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
 }
 
 /**

@@ -32,6 +32,17 @@ describe('parseFunctionId', () => {
     })
   })
 
+  it('decodes non-ASCII characters in file/export without mojibake', () => {
+    const id = base64url({
+      file: '/src/routes/café.tsx?tss-serverfn-split',
+      export: 'créer_createServerFn_handler',
+    })
+    expect(parseFunctionId(id)).toEqual({
+      fileName: '/src/routes/café.tsx',
+      functionName: 'créer',
+    })
+  })
+
   it('supports the legacy `file--fn` format', () => {
     expect(parseFunctionId('src_routes_index_tsx--greet_createServerFn_handler')).toEqual({
       fileName: 'src/routes/index.tsx',

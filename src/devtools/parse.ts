@@ -1,8 +1,20 @@
 /**
+ * Decode a base64url string (unpadded, `-`/`_` instead of `+`/`/`) the way
+ * `Buffer.from(...).toString('base64url')` produces it. Plain `atob` only
+ * understands the standard base64 alphabet and throws `InvalidCharacterError`
+ * on `-`/`_`, so we translate the alphabet and restore padding first.
+ */
+function base64UrlDecode(str: string): string {
+  const base64 = str.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
+  return atob(padded)
+}
+
+/**
  * Resolve a TanStack Start server-function `functionId` (the last segment of the
  * request URL) into a friendly file + function name.
  *
- * In current TanStack Start the id is (unpadded) base64-encoded JSON, e.g.
+ * In current TanStack Start the id is (unpadded) base64url-encoded JSON, e.g.
  * `{"file":"/src/routes/index.tsx?tss-serverfn-split","export":"greet_createServerFn_handler"}`.
  * We also fall back to the older `src_routes_index_tsx--greet` style and, failing
  * both, just surface the raw id (the bundler may emit opaque ids in production).
@@ -11,9 +23,9 @@ export function parseFunctionId(functionId: string): {
   fileName: string
   functionName: string
 } {
-  // Newer format: base64-encoded JSON metadata.
+  // Newer format: base64url-encoded JSON metadata.
   try {
-    const decoded = atob(functionId)
+    const decoded = base64UrlDecode(functionId)
     if (decoded.startsWith('{')) {
       const meta = JSON.parse(decoded) as {
         file?: string

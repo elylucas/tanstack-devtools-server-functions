@@ -1,8 +1,23 @@
 import { fromCrossJSON, fromJSON } from 'seroval'
-import { defaultSerovalPlugins } from '@tanstack/router-core'
+import * as routerCore from '@tanstack/router-core'
+import * as routerCoreSsrClient from '@tanstack/router-core/ssr/client'
 import { addEntry, updateEntry } from './network-store'
 import { parseFunctionId } from './parse'
+import type { Plugin } from 'seroval'
 import type { ServerFnEntry } from './network-store'
+
+/**
+ * TanStack Start 1.0 moved `defaultSerovalPlugins` from the `@tanstack/router-core`
+ * root to `@tanstack/router-core/ssr/client`; earlier versions only export it
+ * from the root. A named import fails to link (crashing the whole app) on
+ * whichever side lacks it, so read it off the namespace objects instead, where
+ * a missing export is just `undefined`.
+ */
+type MaybeSerovalPlugins = { defaultSerovalPlugins?: Array<Plugin<any, any>> }
+export const defaultSerovalPlugins: Array<Plugin<any, any>> =
+  (routerCoreSsrClient as MaybeSerovalPlugins).defaultSerovalPlugins ??
+  (routerCore as MaybeSerovalPlugins).defaultSerovalPlugins ??
+  []
 
 /**
  * Every TanStack Start server-function request is stamped with this header by
@@ -10,6 +25,12 @@ import type { ServerFnEntry } from './network-store'
  * fetches so the panel only shows the traffic the user cares about.
  */
 const SERVER_FN_HEADER = 'x-tsr-serverfn'
+
+/**
+ * Set by Start 1.0 when the server function threw a `Response`; the client
+ * rejects the call with it, so the panel should show it as an error.
+ */
+const RAW_RESPONSE_HEADER = 'x-tss-raw-response'
 
 let installed = false
 let counter = 0
@@ -33,9 +54,10 @@ function isServerFn(headers: Headers): boolean {
  * Server-function responses are seroval-serialized on the wire (e.g.
  * `{"t":10,"i":0,...}`), which is unreadable. When the response is flagged as
  * serialized we decode it back into the real return value and pretty-print it.
- * The decoded payload is an envelope: `{ result, error, context }`.
+ * The decoded payload is an envelope: `{ result, context }` on success and
+ * `{ error }` on failure (pre-1.0: always `{ result, error, context }`).
  */
-function decodeServerFnResponse(
+export function decodeServerFnResponse(
   text: string,
   isSerialized: boolean,
 ): { pretty?: string; isError?: boolean } {
@@ -52,12 +74,15 @@ function decodeServerFnResponse(
     })
     if (value && typeof value === 'object' && ('result' in value || 'error' in value)) {
       const env = value as { result?: unknown; error?: unknown }
-      if (env.error != null) {
+      // In 1.0 only a failed call has an `error` key, and its value is whatever
+      // was thrown — so `throw undefined` still fails. Pre-1.0 envelopes carry
+      // both keys and only a non-null `error` means failure.
+      if (env.error != null || !('result' in env)) {
         const e = env.error
         const error =
           e instanceof Error
             ? { name: e.name, message: e.message, stack: e.stack }
-            : e
+            : (e ?? null)
         return { pretty: JSON.stringify({ error }, null, 2), isError: true }
       }
       return { pretty: JSON.stringify(env.result ?? null, null, 2) }
@@ -174,6 +199,8 @@ export function installServerFnInterceptor() {
       }
 
       const isSerialized = !!response.headers.get('x-tss-serialized')
+      const isThrownResponse =
+        response.headers.get(RAW_RESPONSE_HEADER) === 'thrown'
       const decoded = rawBody
         ? decodeServerFnResponse(rawBody, isSerialized)
         : {}
@@ -181,7 +208,10 @@ export function installServerFnInterceptor() {
       updateEntry(id, {
         // A server fn can return HTTP 200 while throwing — detect that via the
         // decoded envelope so the list reflects the real outcome.
-        status: !response.ok || decoded.isError ? 'error' : 'success',
+        status:
+          !response.ok || decoded.isError || isThrownResponse
+            ? 'error'
+            : 'success',
         statusCode: response.status,
         statusText: response.statusText,
         durationMs: Date.now() - startedAt,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useStore } from '@tanstack/react-store'
+import { useSelector } from '@tanstack/react-store'
 import JsonView from '@uiw/react-json-view'
 import { vscodeTheme } from '@uiw/react-json-view/vscode'
 import { clearEntries, networkStore } from './network-store'
@@ -271,7 +271,7 @@ function Detail({ entry }: { entry: ServerFnEntry }) {
 }
 
 export function NetworkPanel() {
-  const entries = useStore(networkStore, (s) => s.entries)
+  const entries = useSelector(networkStore, (s) => s.entries)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filter, setFilter] = useState('')
 
